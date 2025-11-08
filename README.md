@@ -2,14 +2,14 @@
 
 > **Project Summary:**  
 > Interactive Power BI dashboard analyzing 27,800 Spotify songs from the *Top 50 Global* dataset.  
-> This project demonstrates Power BI data modeling (star schema), Power Query transformations, KPI analysis, and interactive visuals using a dynamic slicer (Month & Quarter).  
-> The report includes **four pages** — Overview, Artist Analysis, Songs Insights, and Album Analysis.
+> This project demonstrates Power BI data modeling , Power Query transformations, KPI analysis, and interactive visuals using a dynamic slicer (Month & Quarter).  
+> The report includes **four pages** — Home, Overview, Artist Analysis, Songs Insights.
 
 ---
 
 ### Overview Page
 
-<img src="https://github.com/omkarshinde25/Spotify-Music-Data-Analysis/blob/main/Dashboards/Spotify_Overview.png" width="800"> <br>
+<img src="https://github.com/omkarshinde25/Spotify-Music-Data-Analysis/blob/main/Dashboard%20PNG/Overview%20Page.png" width="800"> <br>
 
 ---
 
@@ -17,13 +17,13 @@
 
 1. Project Overview  
 2. Files & Images Included  
-3. Data Model (Star Schema)  
+3. Data Modeling 
 4. Data Preparation & Transformations (Step-by-Step)  
 5. Key Insights and KPIs  
 6. Dashboard Pages & Visualisations (Detailed Point-by-Point)  
 7. Navigation, Bookmarks & Buttons (Page Navigation Setup)  
 8. Performance Recommendations  
-9. How to Reproduce / Deliverables  
+9. How to Reproduce
 10. Project Outcome
 
 ---
@@ -51,20 +51,24 @@ This Power BI project analyzes **Spotify Top 50 Global data (27,800 rows)** cont
 
 Dashboard Screenshots (for visual preview):
 
+### Home Page
+<img src="https://github.com/omkarshinde25/Spotify-Music-Data-Analysis/blob/main/Dashboard%20PNG/Home%20Page.png" width="800"> <br>
+
+### Overview Page
+<img src="https://github.com/omkarshinde25/Spotify-Music-Data-Analysis/blob/main/Dashboard%20PNG/Overview%20Page.png" width="800"> <br>
+
 ### Artist Analysis Page  
-<img src="https://github.com/omkarshinde25/Spotify-Music-Data-Analysis/blob/main/Dashboards/Spotify_Artist.png" width="800"> <br>
+<img src="https://github.com/omkarshinde25/Spotify-Music-Data-Analysis/blob/main/Dashboard%20PNG/Artists%20Page.png" width="800"> <br>
 
 ### Songs Insights Page  
-<img src="https://github.com/omkarshinde25/Spotify-Music-Data-Analysis/blob/main/Dashboards/Spotify_Songs.png" width="800"> <br>
+<img src="https://github.com/omkarshinde25/Spotify-Music-Data-Analysis/blob/main/Dashboard%20PNG/Songs%20Page.png" width="800"> <br>
 
-### Album Analysis Page  
-<img src="https://github.com/omkarshinde25/Spotify-Music-Data-Analysis/blob/main/Dashboards/Spotify_Album.png" width="800"> <br>
 
 ---
 
-## 3. Data Model (Star Schema)
+## 3. Data Modeling
 
-<img src="https://github.com/omkarshinde25/Spotify-Music-Data-Analysis/blob/main/Dashboards/Spotify_Star_Schema.png" width="800"> <br>
+<img src="https://github.com/omkarshinde25/Spotify-Music-Data-Analysis/blob/main/Dashboard%20PNG/Schema.png" width="800"> <br>
 
 ### Structure
 
@@ -72,10 +76,6 @@ Dashboard Screenshots (for visual preview):
 * **Dimension Table:** `Slicer_Option` — supports dynamic switching between Month and Quarter.  
 * **Measure Table:** stores calculated KPIs and metrics.
 
-### Relationships
-
-* `Top-50-World[Month]` linked with `Slicer_Option[Name]`.  
-* Model follows a **Star Schema** design to optimize performance and simplify analysis.
 
 ---
 
@@ -105,6 +105,96 @@ Performed in **Power Query** within Power BI:
 * **Explicit vs Non-Explicit:** Comparison of songs marked explicit vs non-explicit.  
 * **Popularity by Month:** Trend analysis of overall popularity across time periods.
 
+### Dynamic Slicer Measure 
+
+```dax
+Slicer_Option = {
+    ("Month", NAMEOF('Top-50-World'[Month]), 0),
+    ("Quarter", NAMEOF('Top-50-World'[Qtr]), 1)
+}
+```
+## Measure Overview, Artists, Songs
+
+```dax
+DEFINE
+    MEASURE 'Top-50-world'[Total Songs] = COUNTROWS('Top-50-world')
+    MEASURE 'Top-50-world'[Distinct Songs] = DISTINCTCOUNT('Top-50-world'[song])
+    MEASURE 'Top-50-world'[Distinct Artists] = DISTINCTCOUNT('Top-50-world'[artist])
+    MEASURE 'Top-50-world'[Avg Popularity] = AVERAGE('Top-50-world'[popularity])
+    MEASURE 'Top-50-world'[Max Popularity] = MAX('Top-50-world'[popularity])
+    MEASURE 'Top-50-world'[Min Popularity] = MIN('Top-50-world'[popularity])
+
+    MEASURE 'Top-50-world'[Avg Duration Minutes] = AVERAGE('Top-50-world'[duration_ms]) / 60000
+    MEASURE 'Top-50-world'[Max Duration Minutes] = MAX('Top-50-world'[duration_ms]) / 60000
+    MEASURE 'Top-50-world'[Min Duration Minutes] = MIN('Top-50-world'[duration_ms]) / 60000
+
+    MEASURE 'Top-50-world'[Explicit Songs] = CALCULATE(COUNTROWS('Top-50-world'), 'Top-50-world'[is_explicit] = TRUE())
+    MEASURE 'Top-50-world'[Non-Explicit Songs] = CALCULATE(COUNTROWS('Top-50-world'), 'Top-50-world'[is_explicit] = FALSE())
+    MEASURE 'Top-50-world'[Pct Explicit Songs] = DIVIDE([Explicit Songs], [Total Songs], 0)
+    MEASURE 'Top-50-world'[Avg Popularity Explicit] = CALCULATE(AVERAGE('Top-50-world'[popularity]), 'Top-50-world'[is_explicit] = TRUE())
+    MEASURE 'Top-50-world'[Avg Popularity NonExplicit] = CALCULATE(AVERAGE('Top-50-world'[popularity]), 'Top-50-world'[is_explicit] = FALSE())
+
+    MEASURE 'Top-50-world'[Avg Position] = AVERAGE('Top-50-world'[position])
+    MEASURE 'Top-50-world'[Position 1 Songs] = CALCULATE(COUNTROWS('Top-50-world'), 'Top-50-world'[position] = 1)
+    MEASURE 'Top-50-world'[Position 1 Artists] = CALCULATE(DISTINCTCOUNT('Top-50-world'[artist]), 'Top-50-world'[position] = 1)
+
+    MEASURE 'Top-50-world'[Avg Tracks per Album] = AVERAGE('Top-50-world'[total_tracks])
+    MEASURE 'Top-50-world'[Album Type Count] = DISTINCTCOUNT('Top-50-world'[album_type])
+    MEASURE 'Top-50-world'[Singles Count] = CALCULATE(COUNTROWS('Top-50-world'), 'Top-50-world'[album_type] = "single")
+    MEASURE 'Top-50-world'[Albums Count] = CALCULATE(COUNTROWS('Top-50-world'), 'Top-50-world'[album_type] = "album")
+
+    -- Artist-scoped (use when Artist in context)
+    MEASURE 'Top-50-world'[Songs per Artist] = COUNTROWS('Top-50-world')
+    MEASURE 'Top-50-world'[Distinct Songs per Artist] = DISTINCTCOUNT('Top-50-world'[song])
+    MEASURE 'Top-50-world'[Avg Popularity per Artist] = AVERAGE('Top-50-world'[popularity])
+    MEASURE 'Top-50-world'[Position1 Hits per Artist] = CALCULATE(COUNTROWS('Top-50-world'), 'Top-50-world'[position] = 1)
+
+    -- Time-scoped (use when Year in context)
+    MEASURE 'Top-50-world'[Songs per Year] = COUNTROWS('Top-50-world')
+    MEASURE 'Top-50-world'[Avg Popularity per Year] = AVERAGE('Top-50-world'[popularity])
+    MEASURE 'Top-50-world'[Avg Duration per Year] = AVERAGE('Top-50-world'[duration_ms]) / 60000
+    MEASURE 'Top-50-world'[Pct Explicit per Year] = DIVIDE(
+        CALCULATE(COUNTROWS('Top-50-world'), 'Top-50-world'[is_explicit] = TRUE()),
+        [Songs per Year], 
+        0
+    )
+
+EVALUATE
+    SUMMARIZECOLUMNS(
+        "Total Songs", [Total Songs],
+        "Distinct Songs", [Distinct Songs],
+        "Distinct Artists", [Distinct Artists],
+        "Avg Popularity", [Avg Popularity],
+        "Max Popularity", [Max Popularity],
+        "Min Popularity", [Min Popularity],
+        "Avg Duration Minutes", [Avg Duration Minutes],
+        "Max Duration Minutes", [Max Duration Minutes],
+        "Min Duration Minutes", [Min Duration Minutes],
+        "Explicit Songs", [Explicit Songs],
+        "Non-Explicit Songs", [Non-Explicit Songs],
+        "Pct Explicit Songs", [Pct Explicit Songs],
+        "Avg Popularity Explicit", [Avg Popularity Explicit],
+        "Avg Popularity NonExplicit", [Avg Popularity NonExplicit],
+        "Avg Position", [Avg Position],
+        "Position 1 Songs", [Position 1 Songs],
+        "Position 1 Artists", [Position 1 Artists],
+        "Avg Tracks per Album", [Avg Tracks per Album],
+        "Album Type Count", [Album Type Count],
+        "Singles Count", [Singles Count],
+        "Albums Count", [Albums Count],
+        "Songs per Artist", [Songs per Artist],
+        "Distinct Songs per Artist", [Distinct Songs per Artist],
+        "Avg Popularity per Artist", [Avg Popularity per Artist],
+        "Position1 Hits per Artist", [Position1 Hits per Artist],
+        "Songs per Year", [Songs per Year],
+        "Avg Popularity per Year", [Avg Popularity per Year],
+        "Avg Duration per Year", [Avg Duration per Year],
+        "Pct Explicit per Year", [Pct Explicit per Year]
+    )
+
+```
+
+
 ---
 
 ## 6. Dashboard Pages & Visualisations (Detailed Point-by-Point)
@@ -130,13 +220,6 @@ Performed in **Power Query** within Power BI:
 * Top 10 Songs ranked by Popularity  
 * Songs grouped by Album Type  
 * Table visual with Song, Artist, Duration, Release Date, and Popularity  
-
----
-
-### Album Analysis Page
-* Album Type vs Total Songs chart  
-* Explicit vs Non-Explicit song count per Album Type  
-* Average Popularity per Album Type  
 
 ---
 
@@ -168,8 +251,8 @@ Performed in **Power Query** within Power BI:
 ### Files Delivered
 * Power BI `.pbix` file  
 * Cleaned dataset: `Top-50-World.csv`  
-* Dashboard images: Overview, Artist, Songs, Album  
-* `README.md` (this document)
+* Dashboard PNG: Overview, Artist, Songs, Album  
+* `README.md` 
 
 ### Steps to Reproduce
 1. Open Power BI Desktop → Load `Top-50-World.csv`.  
@@ -191,12 +274,3 @@ This Power BI dashboard provides an interactive view of **Spotify music performa
 * Visualization of monthly and yearly popularity trends.  
 * Efficient navigation and dynamic insights via slicers and bookmarks.  
 
----
-
-**Created by:** Omkar Shinde  
-**Tools Used:** Power BI, Power Query, DAX, Excel  
-**Dataset:** Spotify Top 50 Global (27,800 rows)  
-**Location:** Kolhapur, India  
-**Contact:** shindeomkar2508@gmail.com  
-**LinkedIn:** [https://www.linkedin.com/in/omkar-shinde-64a479245](https://www.linkedin.com/in/omkar-shinde-64a479245)  
-**GitHub:** [https://github.com/omkarshinde25](https://github.com/omkarshinde25)
