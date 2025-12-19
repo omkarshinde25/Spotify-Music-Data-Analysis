@@ -1,4 +1,6 @@
-# Spotify Music Data Analysis — README
+# Spotify Music Data Analysis 
+
+Now Analysis using SQL – Next week Uploading the project
 
 > **Project Summary:**  
 > Interactive Power BI dashboard analyzing 27,800 Spotify songs from the *Top 50 Global* dataset.  
